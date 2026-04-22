@@ -1,0 +1,38 @@
+{
+  "id": "bailian",
+  "enabledByDefault": true,
+  "uiHints": {
+    "webSearch.apiKey": {
+      "label": "Bailian Search API Key",
+      "help": "Alibaba Bailian / DashScope API key (fallback: DASHSCOPE_API_KEY, MODELSTUDIO_API_KEY, or QWEN_API_KEY).",
+      "sensitive": true,
+      "placeholder": "sk-..."
+    },
+    "webSearch.mode": {
+      "label": "Bailian Search Mode",
+      "help": "Choose AI-synthesized answer mode or structured search results mode."
+    }
+  },
+  "contracts": {
+    "webSearchProviders": ["bailian"]
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "webSearch": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "apiKey": {
+            "type": ["string", "object"]
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["answer", "results"]
+          }
+        }
+      }
+    }
+  }
+}

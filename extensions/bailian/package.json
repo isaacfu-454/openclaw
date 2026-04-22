@@ -1,0 +1,21 @@
+{
+  "name": "@openclaw/bailian-plugin",
+  "version": "2026.4.20",
+  "private": true,
+  "description": "OpenClaw Bailian web search plugin",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0"
+  },
+  "devDependencies": {
+    "@openclaw/plugin-sdk": "workspace:*"
+  },
+  "openclaw": {
+    "bundle": {
+      "stageRuntimeDependencies": true
+    },
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

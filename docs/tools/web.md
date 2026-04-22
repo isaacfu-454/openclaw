@@ -59,6 +59,12 @@ local while `web_search` and `x_search` can use xAI Responses under the hood.
 ## Choosing a provider
 
 <CardGroup cols={2}>
+  <Card title="Baidu Search" icon="globe" href="/tools/baidu-search">
+    Structured Baidu web results with titles, URLs, and snippets via Baidu Qianfan.
+  </Card>
+  <Card title="Bailian Web Search" icon="globe" href="/tools/bailian-search">
+    AI-synthesized answers with citations by default, with optional structured results via Bailian Web Search.
+  </Card>
   <Card title="Brave Search" icon="shield" href="/tools/brave-search">
     Structured results with snippets. Supports `llm-context` mode, country/language filters. Free tier available.
   </Card>
@@ -101,6 +107,8 @@ local while `web_search` and `x_search` can use xAI Responses under the hood.
 
 | Provider                                  | Result style               | Filters                                          | API key                                                                          |
 | ----------------------------------------- | -------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------- |
+| [Baidu](/tools/baidu-search)              | Structured snippets        | --                                               | `BAIDU_API_KEY`                                                                  |
+| [Bailian](/tools/bailian-search)          | AI-synthesized or results  | Mode (`answer` / `results`)                      | `DASHSCOPE_API_KEY` / `MODELSTUDIO_API_KEY` / `QWEN_API_KEY`                     |
 | [Brave](/tools/brave-search)              | Structured snippets        | Country, language, time, `llm-context` mode      | `BRAVE_API_KEY`                                                                  |
 | [DuckDuckGo](/tools/duckduckgo-search)    | Structured snippets        | --                                               | None (key-free)                                                                  |
 | [Exa](/tools/exa-search)                  | Structured + extracted     | Neural/keyword mode, date, content extraction    | `EXA_API_KEY`                                                                    |
@@ -164,18 +172,20 @@ API-backed providers first:
 1. **Brave** -- `BRAVE_API_KEY` or `plugins.entries.brave.config.webSearch.apiKey` (order 10)
 2. **MiniMax Search** -- `MINIMAX_CODE_PLAN_KEY` / `MINIMAX_CODING_API_KEY` or `plugins.entries.minimax.config.webSearch.apiKey` (order 15)
 3. **Gemini** -- `GEMINI_API_KEY` or `plugins.entries.google.config.webSearch.apiKey` (order 20)
-4. **Grok** -- `XAI_API_KEY` or `plugins.entries.xai.config.webSearch.apiKey` (order 30)
-5. **Kimi** -- `KIMI_API_KEY` / `MOONSHOT_API_KEY` or `plugins.entries.moonshot.config.webSearch.apiKey` (order 40)
-6. **Perplexity** -- `PERPLEXITY_API_KEY` / `OPENROUTER_API_KEY` or `plugins.entries.perplexity.config.webSearch.apiKey` (order 50)
-7. **Firecrawl** -- `FIRECRAWL_API_KEY` or `plugins.entries.firecrawl.config.webSearch.apiKey` (order 60)
-8. **Exa** -- `EXA_API_KEY` or `plugins.entries.exa.config.webSearch.apiKey` (order 65)
-9. **Tavily** -- `TAVILY_API_KEY` or `plugins.entries.tavily.config.webSearch.apiKey` (order 70)
+4. **Bailian** -- `DASHSCOPE_API_KEY` / `MODELSTUDIO_API_KEY` / `QWEN_API_KEY` or `plugins.entries.bailian.config.webSearch.apiKey` (order 25)
+5. **Baidu** -- `BAIDU_API_KEY` or `plugins.entries.baidu.config.webSearch.apiKey` (order 27)
+6. **Grok** -- `XAI_API_KEY` or `plugins.entries.xai.config.webSearch.apiKey` (order 30)
+7. **Kimi** -- `KIMI_API_KEY` / `MOONSHOT_API_KEY` or `plugins.entries.moonshot.config.webSearch.apiKey` (order 40)
+8. **Perplexity** -- `PERPLEXITY_API_KEY` / `OPENROUTER_API_KEY` or `plugins.entries.perplexity.config.webSearch.apiKey` (order 50)
+9. **Firecrawl** -- `FIRECRAWL_API_KEY` or `plugins.entries.firecrawl.config.webSearch.apiKey` (order 60)
+10. **Exa** -- `EXA_API_KEY` or `plugins.entries.exa.config.webSearch.apiKey` (order 65)
+11. **Tavily** -- `TAVILY_API_KEY` or `plugins.entries.tavily.config.webSearch.apiKey` (order 70)
 
 Key-free fallbacks after that:
 
-10. **DuckDuckGo** -- key-free HTML fallback with no account or API key (order 100)
-11. **Ollama Web Search** -- key-free fallback via your configured Ollama host; requires Ollama to be reachable and signed in with `ollama signin` and can reuse Ollama provider bearer auth if the host needs it (order 110)
-12. **SearXNG** -- `SEARXNG_BASE_URL` or `plugins.entries.searxng.config.webSearch.baseUrl` (order 200)
+12. **DuckDuckGo** -- key-free HTML fallback with no account or API key (order 100)
+13. **Ollama Web Search** -- key-free fallback via your configured Ollama host; requires Ollama to be reachable and signed in with `ollama signin` and can reuse Ollama provider bearer auth if the host needs it (order 110)
+14. **SearXNG** -- `SEARXNG_BASE_URL` or `plugins.entries.searxng.config.webSearch.baseUrl` (order 200)
 
 If no provider is detected, it falls back to Brave (you will get a missing-key
 error prompting you to configure one).
