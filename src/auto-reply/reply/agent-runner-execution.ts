@@ -71,7 +71,8 @@ import {
 import { type BlockReplyPipeline } from "./block-reply-pipeline.js";
 import type { FollowupRun } from "./queue.js";
 import { createBlockReplyDeliveryHandler } from "./reply-delivery.js";
-import { createReplyMediaPathNormalizer } from "./reply-media-paths.runtime.js";
+import type { ReplyMediaContext } from "./reply-media-paths.js";
+import { createReplyMediaContext } from "./reply-media-paths.runtime.js";
 import type { ReplyOperation } from "./reply-run-registry.js";
 import type { TypingSignaler } from "./typing-mode.js";
 
@@ -581,10 +582,12 @@ export async function runAgentTurnWithFallback(params: {
   resetSessionAfterRoleOrderingConflict: (reason: string) => Promise<boolean>;
   isHeartbeat: boolean;
   sessionKey?: string;
+  runtimePolicySessionKey?: string;
   getActiveSessionEntry: () => SessionEntry | undefined;
   activeSessionStore?: Record<string, SessionEntry>;
   storePath?: string;
   resolvedVerboseLevel: VerboseLevel;
+  replyMediaContext?: ReplyMediaContext;
 }): Promise<AgentRunLoopResult> {
   const TRANSIENT_HTTP_RETRY_DELAY_MS = 2_500;
   let didLogHeartbeatStrip = false;
@@ -601,20 +604,22 @@ export async function runAgentTurnWithFallback(params: {
         };
 
   const runId = params.opts?.runId ?? crypto.randomUUID();
-  const normalizeReplyMediaPaths = createReplyMediaPathNormalizer({
-    cfg: runtimeConfig,
-    sessionKey: params.sessionKey,
-    workspaceDir: params.followupRun.run.workspaceDir,
-    messageProvider: params.followupRun.run.messageProvider,
-    accountId: params.followupRun.originatingAccountId ?? params.followupRun.run.agentAccountId,
-    groupId: params.followupRun.run.groupId,
-    groupChannel: params.followupRun.run.groupChannel,
-    groupSpace: params.followupRun.run.groupSpace,
-    requesterSenderId: params.followupRun.run.senderId,
-    requesterSenderName: params.followupRun.run.senderName,
-    requesterSenderUsername: params.followupRun.run.senderUsername,
-    requesterSenderE164: params.followupRun.run.senderE164,
-  });
+  const replyMediaContext =
+    params.replyMediaContext ??
+    createReplyMediaContext({
+      cfg: runtimeConfig,
+      sessionKey: params.sessionKey,
+      workspaceDir: params.followupRun.run.workspaceDir,
+      messageProvider: params.followupRun.run.messageProvider,
+      accountId: params.followupRun.originatingAccountId ?? params.followupRun.run.agentAccountId,
+      groupId: params.followupRun.run.groupId,
+      groupChannel: params.followupRun.run.groupChannel,
+      groupSpace: params.followupRun.run.groupSpace,
+      requesterSenderId: params.followupRun.run.senderId,
+      requesterSenderName: params.followupRun.run.senderName,
+      requesterSenderUsername: params.followupRun.run.senderUsername,
+      requesterSenderE164: params.followupRun.run.senderE164,
+    });
   let didNotifyAgentRunStart = false;
   const notifyAgentRunStart = () => {
     if (didNotifyAgentRunStart) {
@@ -835,7 +840,7 @@ export async function runAgentTurnWithFallback(params: {
             currentMessageId: params.sessionCtx.MessageSidFull ?? params.sessionCtx.MessageSid,
             normalizeStreamingText,
             applyReplyToMode: params.applyReplyToMode,
-            normalizeMediaPaths: normalizeReplyMediaPaths,
+            normalizeMediaPaths: replyMediaContext.normalizePayload,
             typingSignals: params.typingSignals,
             blockStreamingEnabled: params.blockStreamingEnabled,
             blockReplyPipeline,
@@ -902,6 +907,7 @@ export async function runAgentTurnWithFallback(params: {
                   timeoutMs: params.followupRun.run.timeoutMs,
                   runId,
                   extraSystemPrompt: params.followupRun.run.extraSystemPrompt,
+                  extraSystemPromptStatic: params.followupRun.run.extraSystemPromptStatic,
                   ownerNumbers: params.followupRun.run.ownerNumbers,
                   cliSessionId: cliSessionBinding?.sessionId,
                   cliSessionBinding,
@@ -1013,6 +1019,7 @@ export async function runAgentTurnWithFallback(params: {
                 groupSpace: normalizeOptionalString(params.sessionCtx.GroupSpace),
                 ...senderContext,
                 ...runBaseParams,
+                sandboxSessionKey: params.runtimePolicySessionKey,
                 prompt: params.commandBody,
                 extraSystemPrompt: params.followupRun.run.extraSystemPrompt,
                 toolResultFormat: (() => {
